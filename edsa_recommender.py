@@ -36,16 +36,17 @@ import numpy as np
 from utils.data_loader import load_movie_titles
 from recommenders.collaborative_based import collab_model
 from recommenders.content_based import content_model
+from recommenders.memory_based_recommender import get_content_based_recommendations
 
 # Data Loading
-title_list = load_movie_titles('resources/data/movies.csv')
-
+title_list = load_movie_titles('resources/data/movies.csv')                    
+                     
 # App declaration
 def main():
 
     # DO NOT REMOVE the 'Recommender System' option below, however,
     # you are welcome to add more options to enrich your app.
-    page_options = ["Recommender System","Solution Overview"]
+    page_options = ["About the app", "Content vs Collaborative", "Recommender System", "Data Insights", "Because You Watched ..."]
 
     # -------------------------------------------------------------------
     # ----------- !! THIS CODE MUST NOT BE ALTERED !! -------------------
@@ -63,7 +64,7 @@ def main():
 
         # User-based preferences
         st.write('### Enter Your Three Favorite Movies')
-        movie_1 = st.selectbox('Fisrt Option',title_list[14930:15200])
+        movie_1 = st.selectbox('First Option',title_list[14930:15200])
         movie_2 = st.selectbox('Second Option',title_list[25055:25255])
         movie_3 = st.selectbox('Third Option',title_list[21100:21200])
         fav_movies = [movie_1,movie_2,movie_3]
@@ -100,13 +101,87 @@ def main():
     # -------------------------------------------------------------------
 
     # ------------- SAFE FOR ALTERING/EXTENSION -------------------
-    if page_selection == "Solution Overview":
-        st.title("Solution Overview")
-        st.write("Describe your winning approach on this page")
-
-    # You may want to add more sections here for aspects such as an EDA,
-    # or to provide your business pitch.
-
-
+    if page_selection == "About the app":
+        
+        html_temp = """
+        <div style="background-color:blue;padding:10px">
+        <h1 style="color:white;text-align:center;">Movie Recommender App </h2>
+        </div>
+        """
+        st.markdown(html_temp,unsafe_allow_html=True)
+        st.info("General Information about the app")
+        
+        st.markdown(open('resources/info.md').read())
+    
+    # ------------------------------------------------------------------
+                     
+    if page_selection == "Data Insights":
+        
+        html_temp = """
+        <div style="background-color:blue;padding:10px">
+        <h1 style="color:white;text-align:center;">Movie Recommender App </h2>
+        </div>
+        """
+        st.markdown(html_temp,unsafe_allow_html=True)
+        st.info("Insights on the movies")
+                     
+        st.markdown("The following page contains visuals related to the movies dataset.")             
+        
+        st.subheader("View visuals:")
+        
+        if st.checkbox('Distribution of Genres'):
+            st.image('resources/imgs/Genre.PNG',use_column_width=True)         
+                     
+        if st.checkbox('Decade of Release of Movies'):
+            st.image('resources/imgs/Decades.PNG',use_column_width=True)          
+                     
+        if st.checkbox('Distribution of Ratings'):
+            st.image('resources/imgs/Ratings.PNG',use_column_width=True)          
+                     
+        if st.checkbox('Highest Rated Movies (Bayesian Average)'):              
+            st.image('resources/imgs/Highest_Rated.PNG',use_column_width=True)          
+                     
+        if st.checkbox('Lowest Rated Movies (Bayesian Average)'):              
+            st.image('resources/imgs/Lowest_Rated.PNG',use_column_width=True)                              
+                     
+    # ------------------------------------------------------------------
+                     
+    if page_selection == "Because You Watched ...":
+        
+        html_temp = """
+        <div style="background-color:blue;padding:10px">
+        <h1 style="color:white;text-align:center;">Movie Recommender App </h2>
+        </div>
+        """
+        st.markdown(html_temp,unsafe_allow_html=True)
+        st.info("Movie Recommender")
+        
+        movie_text = st.text_area("Enter your favourite movie:", "Type Here")
+        
+        if st.button("Get 10 Recommendations"):
+            try:
+                with st.spinner('Crunching the numbers...'):
+                    reco = get_content_based_recommendations(movie_text)
+                    string = '\n'.join(reco)
+                    st.success(f'Because you watched {movie_text}:')
+                    st.text(string)
+            except:
+                    st.error("Oops! Looks like this algorithm does't work.\
+                              We'll need to fix it!")
+            
+    # -------------------------------------------------------------------
+    
+    if page_selection == "Content vs Collaborative":
+        
+        html_temp = """
+        <div style="background-color:blue;padding:10px">
+        <h1 style="color:white;text-align:center;">Movie Recommender App </h2>
+        </div>
+        """
+        st.markdown(html_temp,unsafe_allow_html=True)
+        st.info("Explanation on Content-based and Collaborative-based filtering")
+        
+        st.markdown(open('resources/filtering_info.md').read())
+                     
 if __name__ == '__main__':
     main()
