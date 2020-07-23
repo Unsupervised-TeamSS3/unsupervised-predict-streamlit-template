@@ -37,6 +37,9 @@ from utils.data_loader import load_movie_titles
 from recommenders.collaborative_based import collab_model
 from recommenders.content_based import content_model
 from recommenders.memory_based_recommender import get_content_based_recommendations
+from recommenders.memory_based_recommender import movie_finder
+from recommenders.memory_based_recommender import top_rated
+from recommenders.memory_based_recommender import genres
 
 # Data Loading
 title_list = load_movie_titles('resources/data/movies.csv')                    
@@ -46,7 +49,7 @@ def main():
 
     # DO NOT REMOVE the 'Recommender System' option below, however,
     # you are welcome to add more options to enrich your app.
-    page_options = ["About the app", "Content vs Collaborative", "Recommender System", "Data Insights", "Because You Watched ..."]
+    page_options = ["About the app", "Content vs Collaborative", "Data Insights", "Recommender System", "Because You Watched ...", "Blockbusters"]
 
     # -------------------------------------------------------------------
     # ----------- !! THIS CODE MUST NOT BE ALTERED !! -------------------
@@ -104,8 +107,8 @@ def main():
     if page_selection == "About the app":
         
         html_temp = """
-        <div style="background-color:blue;padding:10px">
-        <h1 style="color:white;text-align:center;">Movie Recommender App </h2>
+        <div style="background-color:black;padding:10px">
+        <h1 style="color:red;text-align:center;">Movie Recommender App </h2>
         </div>
         """
         st.markdown(html_temp,unsafe_allow_html=True)
@@ -118,8 +121,8 @@ def main():
     if page_selection == "Data Insights":
         
         html_temp = """
-        <div style="background-color:blue;padding:10px">
-        <h1 style="color:white;text-align:center;">Movie Recommender App </h2>
+        <div style="background-color:black;padding:10px">
+        <h1 style="color:red;text-align:center;">Movie Recommender App </h2>
         </div>
         """
         st.markdown(html_temp,unsafe_allow_html=True)
@@ -149,8 +152,8 @@ def main():
     if page_selection == "Because You Watched ...":
         
         html_temp = """
-        <div style="background-color:blue;padding:10px">
-        <h1 style="color:white;text-align:center;">Movie Recommender App </h2>
+        <div style="background-color:black;padding:10px">
+        <h1 style="color:red;text-align:center;">Movie Recommender App </h2>
         </div>
         """
         st.markdown(html_temp,unsafe_allow_html=True)
@@ -163,25 +166,59 @@ def main():
                 with st.spinner('Crunching the numbers...'):
                     reco = get_content_based_recommendations(movie_text)
                     string = '\n'.join(reco)
-                    st.success(f'Because you watched {movie_text}:')
+                    movie_name = movie_finder(movie_text)
+                    st.success(f'### BECAUSE YOU WATCHED {movie_name.upper()}:')
                     st.text(string)
             except:
-                    st.error("Oops! Looks like this algorithm does't work.\
-                              We'll need to fix it!")
+                    st.error("Oops! Looks like we cannot find your movie!")
             
     # -------------------------------------------------------------------
     
     if page_selection == "Content vs Collaborative":
         
         html_temp = """
-        <div style="background-color:blue;padding:10px">
-        <h1 style="color:white;text-align:center;">Movie Recommender App </h2>
+        <div style="background-color:black;padding:10px">
+        <h1 style="color:red;text-align:center;">Movie Recommender App </h2>
         </div>
         """
         st.markdown(html_temp,unsafe_allow_html=True)
-        st.info("Explanation on Content-based and Collaborative-based filtering")
+        st.info("Explanation on Content-based filtering and Collaborative-based filtering")
         
         st.markdown(open('resources/filtering_info.md').read())
-                     
+        
+   # --------------------------------------------------------------------
+
+    if page_selection == "Blockbusters":
+        
+        html_temp = """
+        <div style="background-color:black;padding:10px">
+        <h1 style="color:red;text-align:center;">Movie Recommender App </h2>
+        </div>
+        """
+        st.markdown(html_temp,unsafe_allow_html=True)
+        st.info("Getting the best 10 movies by year of release and genre")
+        
+        z = list(range(1980, 2020))
+        string = [str(integer) for integer in z]
+        
+        st.write('### Select the genre')
+        
+        gen = st.selectbox('Genre',genres())
+        
+        st.write('### Select the year')
+        
+        yen = st.selectbox('Year', string)
+        
+        #reco = top_rated(yen, gen)
+        
+        if st.button("Get Movies"):
+            with st.spinner('Crunching the numbers...'):
+                reco = top_rated(yen, gen)
+                if reco != "":
+                    st.success(f'### THE BEST {gen.upper()} MOVIES OF {yen} ARE:')
+                    st.text(reco)
+                else:
+                    st.error("Oops! Looks like there aren't any movies that fit this description!")
+
 if __name__ == '__main__':
     main()
