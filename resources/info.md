@@ -1,8 +1,6 @@
 ## **How to use the app**
 
-In the **"Recommender System"** tab, the user can select 3 of their favourite movies from the available list of movies, and the app will recommend 10 movies for the user to watch. The user should choose the content-based filtering option for this to work. 
-
-In the **"Content vs Collaborative"** tab, the user can gain an understanding of content-based filtering and collaborative-based filtering.
+In the **"Content vs Collaborative"** tab, the user can gain an understanding of the difference between content-based filtering and collaborative-based filtering.
 
 In the **"Data Insights"** tab, one can have a look at:
 
@@ -12,7 +10,13 @@ In the **"Data Insights"** tab, one can have a look at:
 4. The highest-rated movies 
 5. The lowest-rated movies 
 
-(Note that these were calculated using the [Bayesian average](https://www.evanmiller.org/bayesian-average-ratings.html), which takes into account the number of ratings).
+(Note that 4. and 5. were calculated using the [Bayesian average](https://www.evanmiller.org/bayesian-average-ratings.html), which takes into account the number of ratings. For interest sake, the average and bayesian ratings can be seen).
+
+In the **"Recommender System"** tab, the user can select 3 of their favourite movies from the available list of movies, and the app will recommend 10 movies for the user to watch. The user should choose the *content-based filtering* option for this to work. 
+
+In the **"Because You Watched ..."** tab, the user simply types in their favourite movie (even if the spelling is wrong), and the app will recommend 10 movies for the user to watch. This feature makes use of the *collaborative-based* filtering method.
+
+In the **"Blockbusters"** tab, the user simply chooses a year and a genre, and the app will inform the user of the best (maximum 10) movies of that year and genre, according to the ratings. 
 
 
 ## **The data**
