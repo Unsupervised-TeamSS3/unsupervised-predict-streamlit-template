@@ -26,41 +26,25 @@ from fuzzywuzzy import process
 movies = pd.read_csv('resources/data/movies.csv',sep = ',',delimiter=',')
 ratings = pd.read_csv('resources/data/ratings.csv')
 ratings.drop(['timestamp'], axis=1,inplace=True)   
-    
-def create_X(df):
-    """
-    Generates a sparse matrix from ratings dataframe.
-    
-    Args:
-        df: pandas dataframe
-    
-    Returns:
-        X: sparse matrix
-        user_mapper: dict that maps user id's to user indices
-        user_inv_mapper: dict that maps user indices to user id's
-        movie_mapper: dict that maps movie id's to movie indices
-        movie_inv_mapper: dict that maps movie indices to movie id's
-    """
-    
-    N = df['userId'].nunique()
-    M = df['movieId'].nunique()
 
-    user_mapper = dict(zip(np.unique(df['userId']), list(range(N))))
-    movie_mapper = dict(zip(np.unique(df['movieId']), list(range(M))))
-    
-    user_inv_mapper = dict(zip(list(range(N)), np.unique(df['userId'])))
-    movie_inv_mapper = dict(zip(list(range(M)), np.unique(df['movieId'])))
-    
-    user_index = [user_mapper[i] for i in df['userId']]
-    movie_index = [movie_mapper[i] for i in df['movieId']]
+N = ratings['userId'].nunique()
+M = ratings['movieId'].nunique()
 
-    X = csr_matrix((df['rating'], (movie_index, user_index)), shape=(M, N))
+user_mapper = dict(zip(np.unique(ratings['userId']), list(range(N))))
+movie_mapper = dict(zip(np.unique(ratings['movieId']), list(range(M))))
     
-    return X, user_mapper, movie_mapper, user_inv_mapper, movie_inv_mapper
+user_inv_mapper = dict(zip(list(range(N)), np.unique(ratings['userId'])))
+movie_inv_mapper = dict(zip(list(range(M)), np.unique(ratings['movieId'])))
 
-X, user_mapper, movie_mapper, user_inv_mapper, movie_inv_mapper = create_X(ratings)
+def load_sparse_csr(filename):
+    # here we need to add .npz extension manually
+    loader = np.load(filename + '.npz')
+    return csr_matrix((loader['data'], loader['indices'], loader['indptr']),
+                      shape=loader['shape'])
 
-def find_similar_movies(movie_id, X, k, metric='cosine', show_distance=False):
+X = load_sparse_csr('resources/models/sparse_matrix')
+
+def find_similar_movies(movie_id, k, metric='cosine', show_distance=False):
     """
     Finds k-nearest neighbours for a given movie id.
     
@@ -101,9 +85,49 @@ def get_content_based_recommendations(title_string):
     title = movie_finder(title_string)
     idx = movie_idx[title]
     movie_id = idx
-    similar_ids = find_similar_movies(movie_id, X, k=10)
+    similar_ids = find_similar_movies(movie_id, k=10)
     movie_title = movie_titles[movie_id]
     y = []
     for i in similar_ids:
         y.append(movie_titles[i])
     return y
+
+def extract_year_from_title(title):
+    t = title.split('(')
+    year = None
+    if re.search(r'\d+\)', t[-1]):
+        year = t[-1].strip(')')
+        year = year.replace(')', ' ')
+    return year
+
+movies['genres'] = movies['genres'].apply(lambda x: x.split('|'))
+movies['year'] = movies['title'].apply(extract_year_from_title)
+movies = movies[~movies['year'].isnull()]
+
+rating = ratings.merge(movies, on ='movieId')
+rating.dropna(inplace=True)
+
+def top_rated(years, genre):
+    df = rating[rating['year'] == years]
+    comedy_movies = []
+    
+    for row,col in df.iterrows():
+        if genre in col['genres']:
+            if col['title'] not in comedy_movies:
+                comedy_movies.append(col['title'])
+    
+    comedy_m = {}
+    for i in comedy_movies:
+        comedy_m[i] = df[df['title']==i]['rating'].sum()/ len(df[df['title'] == i]['rating'])
+    
+    c_mm = {k: v for k, v in sorted(comedy_m.items(), key=lambda item: item[1])}
+    g = list(c_mm.keys())
+    y = (g[::-1])[:10]
+    
+    return "\n".join(y)
+
+genres_counts = Counter(g for genres in movies['genres'] for g in genres)
+del genres_counts['(no genres listed)']
+
+def genres():
+    return list(genres_counts.keys())
